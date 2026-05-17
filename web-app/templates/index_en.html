@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Registration</title>
+</head>
+<body>
+    <h1>User Registration</h1>
+
+    {% if mensaje %}
+        <p>{{ mensaje }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <label>Name:</label>
+        <input type="text" name="nombre" required>
+
+        <br><br>
+
+        <label>Commune:</label>
+        <select name="comuna">
+            <option value="1">Commune 1</option>
+            <option value="2">Commune 2</option>
+            <option value="3">Commune 3</option>
+            <option value="4">Commune 4</option>
+            <option value="5">Commune 5</option>
+            <option value="6">Commune 6</option>
+            <option value="7">Commune 7</option>
+            <option value="8">Commune 8</option>
+            <option value="9">Commune 9</option>
+            <option value="10">Commune 10</option>
+        </select>
+
+        <br><br>
+
+        <label>Program of interest:</label>
+        <select name="carrera">
+            <option>Medicina</option>
+            <option>Ingeniería</option>
+            <option>Abogacía</option>
+            <option>Licenciatura</option>
+        </select>
+
+        <br><br>
+
+        <button type="submit">Register</button>
+    </form>
+</body>
+</html>

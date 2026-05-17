@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Usuarios</title>
+</head>
+<body>
+    <h1>Registro de Usuarios</h1>
+
+    {% if mensaje %}
+        <p>{{ mensaje }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <label>Nombre:</label>
+        <input type="text" name="nombre" required>
+
+        <br><br>
+
+        <label>Comuna:</label>
+        <select name="comuna">
+            <option value="1">Comuna 1</option>
+            <option value="2">Comuna 2</option>
+            <option value="3">Comuna 3</option>
+            <option value="4">Comuna 4</option>
+            <option value="5">Comuna 5</option>
+            <option value="6">Comuna 6</option>
+            <option value="7">Comuna 7</option>
+            <option value="8">Comuna 8</option>
+            <option value="9">Comuna 9</option>
+            <option value="10">Comuna 10</option>
+        </select>
+
+        <br><br>
+
+        <label>Carrera de interés:</label>
+        <select name="carrera">
+            <option>Medicina</option>
+            <option>Ingeniería</option>
+            <option>Abogacía</option>
+            <option>Licenciatura</option>
+        </select>
+
+        <br><br>
+
+        <button type="submit">Registrar</button>
+    </form>
+</body>
+</html>
