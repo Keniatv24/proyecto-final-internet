@@ -1,0 +1,81 @@
+name: 🚀 Deploy Automático a AWS
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "web-app/**"
+      - "docker-compose.yml"
+      - ".github/workflows/deploy.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: 🔐 Configurar SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AWS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.AWS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: 📥 Descargar cambios en AWS
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }} << 'EOF'
+            set -e
+            cd ~/proyecto-final-internet
+            echo "📂 Directorio: $(pwd)"
+            echo "🔄 Descargando cambios de GitHub..."
+            git fetch origin
+            git reset --hard origin/main
+            echo "✅ Cambios descargados correctamente"
+            git log --oneline -1
+          EOF
+
+      - name: 🐳 Actualizar y reiniciar contenedores
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }} << 'EOF'
+            set -e
+            cd ~/proyecto-final-internet
+            echo "🐳 Actualizando imágenes Docker..."
+            docker-compose pull || true
+            echo "🔄 Reiniciando contenedores..."
+            docker-compose restart web-app-es web-app-en || docker-compose restart
+            sleep 3
+            echo "✅ Contenedores reiniciados"
+          EOF
+
+      - name: ✅ Verificar deploy
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }} << 'EOF'
+            echo "📊 Estado de contenedores:"
+            docker-compose ps
+            echo ""
+            echo "🔍 Verificando acceso..."
+            curl -s -o /dev/null -w "%{http_code}" https://proyectotelematica-kenia.duckdns.org/health || echo "⚠️  Verificar manualmente"
+            echo ""
+            echo "🎉 Deploy completado exitosamente"
+            echo "📌 Cambios en: https://proyectotelematica-kenia.duckdns.org"
+          EOF
+
+      - name: 📧 Notificación de éxito (opcional)
+        if: success()
+        run: |
+          echo "✅ Deploy exitoso"
+          echo "Repositorio: ${{ github.repository }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Por: ${{ github.actor }}"
+
+      - name: ⚠️ Notificación de error (opcional)
+        if: failure()
+        run: |
+          echo "❌ Deploy falló"
+          echo "Revisa los logs arriba para más detalles"

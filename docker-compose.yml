@@ -1,0 +1,191 @@
+version: '3.8'
+
+# 🐳 Docker Compose para EAFIT Proyecto Final
+# 
+# Uso:
+#   docker-compose up                    # Arranca todos los servicios
+#   docker-compose up -d                 # En background
+#   docker-compose down                  # Detiene todos
+#   docker-compose logs -f               # Ver logs en tiempo real
+#   docker-compose ps                    # Ver estado
+
+services:
+
+  # ==========================================
+  # BASE DE DATOS PostgreSQL
+  # ==========================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: eafit-postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: proyecto_final
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    volumes:
+      # Persistencia de datos
+      - postgres_data:/var/lib/postgresql/data
+      # Script de inicialización (opcional)
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - eafit-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    labels:
+      - "com.example.description=PostgreSQL Database"
+
+  # ==========================================
+  # APLICACIÓN FLASK - WEB SERVER (Español)
+  # ==========================================
+  web-app-es:
+    build:
+      context: .
+      dockerfile: web-app/Dockerfile
+    container_name: eafit-web-es
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: proyecto_final
+      DB_USER: admin
+      DB_PASSWORD: admin123
+      LANGUAGE: es
+      FLASK_ENV: production
+      FLASK_APP: app.py
+      SECRET_KEY: ${SECRET_KEY:-tu-clave-secreta-cambiar-en-produccion}
+    ports:
+      - "5000:5000"
+    volumes:
+      # Logs compartidos
+      - ./logs:/app/logs
+      # Desarrollo (comentar en producción)
+      # - ./web-app:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - eafit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    labels:
+      - "com.example.description=EAFIT Web App (Spanish)"
+
+  # ==========================================
+  # APLICACIÓN FLASK - WEB SERVER (Inglés)
+  # ==========================================
+  web-app-en:
+    build:
+      context: .
+      dockerfile: web-app/Dockerfile
+    container_name: eafit-web-en
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: proyecto_final
+      DB_USER: admin
+      DB_PASSWORD: admin123
+      LANGUAGE: en
+      FLASK_ENV: production
+      FLASK_APP: app.py
+      SECRET_KEY: ${SECRET_KEY:-tu-clave-secreta-cambiar-en-produccion}
+    ports:
+      - "5001:5000"  # Puerto diferente (5001)
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - eafit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    labels:
+      - "com.example.description=EAFIT Web App (English)"
+
+  # ==========================================
+  # NGINX - LOAD BALANCER (FASE 5)
+  # ==========================================
+  # Descomentar cuando esté lista la FASE 5
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: eafit-nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./logs/nginx:/var/log/nginx
+  #   depends_on:
+  #     - web-app-es
+  #     - web-app-en
+  #   networks:
+  #     - eafit-network
+  #   restart: unless-stopped
+
+  # ==========================================
+  # ADMINER - Admin DB (Opcional, para debugging)
+  # ==========================================
+  # adminer:
+  #   image: adminer:latest
+  #   container_name: eafit-adminer
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - eafit-network
+  #   environment:
+  #     ADMINER_DEFAULT_SERVER: postgres
+
+# ==========================================
+# VOLÚMENES
+# ==========================================
+volumes:
+  postgres_data:
+    driver: local
+
+# ==========================================
+# REDES
+# ==========================================
+networks:
+  eafit-network:
+    driver: bridge
+
+# ==========================================
+# NOTAS
+# ==========================================
+# 
+# DESARROLLO:
+#   docker-compose up
+#   Accede a:
+#     - ES: http://localhost:5000
+#     - EN: http://localhost:5001
+#     - DB: localhost:5432
+#
+# PRODUCCIÓN:
+#   1. Cambiar SECRET_KEY en .env
+#   2. Usar docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+#   3. Agregar HTTPS/SSL (Let's Encrypt)
+#   4. Descomentar NGINX para load balancing
+#
+# COMANDOS ÚTILES:
+#   docker-compose up -d          # Background
+#   docker-compose logs -f        # Ver logs
+#   docker-compose ps             # Status
+#   docker-compose exec postgres psql -U admin -d proyecto_final  # Conectar BD
+#   docker-compose down -v        # Eliminar todo (incluyendo BD!)
