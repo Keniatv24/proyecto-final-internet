@@ -1,0 +1,110 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #cacaca;
+    margin: 0;
+    padding: 0;
+    color: #212529;
+}
+
+/* --- Header Styles --- */
+header {
+    position: sticky;       /* Keeps header on top */
+    top: 0;
+    width: 100%;
+    background-color: #212529; /* Dark background so text is readable when scrolling */
+    color: rgb(255, 255, 255);
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center;
+    padding: 15px 0;
+    z-index: 1000;    
+    margin-bottom: 30px;
+}
+
+header h1 {
+    margin: 0;
+    text-transform: capitalize;
+}
+
+/* Hide header text on mobile screens */
+@media (max-width: 768px) {
+    header h1 {
+        display: none;
+    }
+    header {
+        padding: 10px 0; 
+    }
+}
+
+/* --- Container & Feature Section Styles --- */
+.container {
+    width: 90%;
+    max-width: 800px;
+    margin: 40px auto;      
+    background-color: transparent;
+    padding: 0px 10px; 
+    box-sizing: border-box;
+}
+
+.Feature_section {
+    background-color: #ffffff;
+    border-radius: 12px;  
+    padding: 30px;
+    margin-bottom: 30px;    
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.Feature_section h2 {
+    margin-top: 0;
+    text-transform: capitalize;
+    border-bottom: 2px solid #E3DAC9;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* --- Form Grid Styles --- */
+form {
+    display: grid;
+    /* First column auto-sizes to fit labels, second fills the remaining space */
+    grid-template-columns: auto 1fr; 
+    gap: 15px 20px;         /* Row gap 15px, Column gap 20px */
+    align-items: center;    /* Vertically aligns labels with inputs */
+}
+
+label {
+    text-align: left;       /* Ensures labels are aligned to the left */
+    font-weight: bold;
+    white-space: nowrap;    /* Prevents labels from breaking into multiple lines if possible */
+}
+
+input[type="text"],
+input[type="password"],
+select {
+    width: 100%;            
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box; 
+    font-size: 14px;
+    
+    /* Adds right-alignment to the text inside inputs and select boxes */
+    text-align: right;      
+}
+
+button {
+    grid-column: 1 / -1;    /* Makes the button stretch across both grid columns */
+    padding: 12px;
+    background-color: #4A90E2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #357ABD;
+}

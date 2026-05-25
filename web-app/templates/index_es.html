@@ -1,49 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Registro de Usuarios</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
-    <h1>Registro de Usuarios</h1>
-
-    {% if mensaje %}
+    <header>
+        <h1> encuesta locacion estudiantes e intereses </h1>
+    </header>
+    <div class="container">
+    <div class="Feature_section">
+        <h2> encuesta </h2>
+        {% if mensaje %}
         <p>{{ mensaje }}</p>
-    {% endif %}
+        {% endif %}
 
-    <form method="POST">
-        <label>Nombre:</label>
-        <input type="text" name="nombre" required>
+        <form method="POST">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id=" nombre" name="nombre" required>
 
-        <br><br>
+            <label for="comuna">Comuna:</label>
+            <select id="comuna" name="comuna">
+                <option value="1">Comuna 1</option>
+                <option value="2">Comuna 2</option>
+                <option value="3">Comuna 3</option>
+                <option value="4">Comuna 4</option>
+                <option value="5">Comuna 5</option>
+                <option value="6">Comuna 6</option>
+                <option value="7">Comuna 7</option>
+                <option value="8">Comuna 8</option>
+                <option value="9">Comuna 9</option>
+                <option value="10">Comuna 10</option>
+            </select>
 
-        <label>Comuna:</label>
-        <select name="comuna">
-            <option value="1">Comuna 1</option>
-            <option value="2">Comuna 2</option>
-            <option value="3">Comuna 3</option>
-            <option value="4">Comuna 4</option>
-            <option value="5">Comuna 5</option>
-            <option value="6">Comuna 6</option>
-            <option value="7">Comuna 7</option>
-            <option value="8">Comuna 8</option>
-            <option value="9">Comuna 9</option>
-            <option value="10">Comuna 10</option>
-        </select>
+            <label for="carrera">Carrera de interés:</label>
+            <select id="carrera" name="carrera">
+                <option>Medicina</option>
+                <option>Ingeniería</option>
+                <option>Abogacía</option>
+                <option>Licenciatura</option>
+            </select>
 
-        <br><br>
+            <button type="submit">Registrar</button>
+        </form>
+    </div>
 
-        <label>Carrera de interés:</label>
-        <select name="carrera">
-            <option>Medicina</option>
-            <option>Ingeniería</option>
-            <option>Abogacía</option>
-            <option>Licenciatura</option>
-        </select>
+    <div class="Feature_section">
+        <h2> solicitar estadisticas</h2>
+        <form method="POST">
+            <label for="usuario">usuario:</label>
+            <input type="text" id="usuario" name="usuario" required>
 
-        <br><br>
+            <label for="contrasena">contraseña:</label>
+            <input type="password" id="contrasena" name="contraseña" required>
 
-        <button type="submit">Registrar</button>
-    </form>
+            <label for="correo">correo:</label>
+            <input type="text" id="correo" name="correo" required>
+            <button type="submit">enviar estadisticas</button>
+        </form>
+    </div>
+    </div>
 </body>
+
 </html>
