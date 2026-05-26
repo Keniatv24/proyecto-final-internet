@@ -104,6 +104,17 @@ def admin_panel():
 def send_report():
     """Genera y envía reporte de estadísticas por correo"""
     try:
+        # Obtener correo del request
+        data = request.get_json()
+        recipient_email = data.get('email', 'ialondonoo@eafit.edu.co')
+        
+        # Validar que el email no esté vacío
+        if not recipient_email:
+            return jsonify({
+                'success': False,
+                'error': 'El correo electrónico es requerido'
+            }), 400
+
         conn = get_connection()
         cur = conn.cursor()
         
@@ -246,7 +257,7 @@ def send_report():
         # Enviar correo
         msg = Message(
             subject='📊 Reporte de Registros EAFIT',
-            recipients=['ialondonoo@eafit.edu.co'],
+            recipients=[recipient_email],
             html=html_content
         )
         
@@ -254,7 +265,7 @@ def send_report():
         
         return jsonify({
             'success': True,
-            'message': 'Reporte enviado correctamente a ialondonoo@eafit.edu.co'
+            'message': f'Reporte enviado correctamente a {recipient_email}'
         })
     except Exception as e:
         return jsonify({
