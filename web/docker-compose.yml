@@ -1,0 +1,94 @@
+services:
+
+  # ==========================================
+  # APLICACIÓN FLASK - WEB SERVER (Español)
+  # ==========================================
+  web-app-es:
+    build:
+      context: ./web-app
+      dockerfile: ./Dockerfile
+    container_name: eafit-web-es
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: proyecto_final
+      DB_USER: admin
+      DB_PASSWORD: admin123
+      LANGUAGE: es
+      FLASK_ENV: production
+      FLASK_APP: app.py
+      #mail
+      MAIL_SERVER: smtp.gmail.com
+      MAIL_PORT: 587
+      MAIL_USE_TLS: 1
+      MAIL_USERNAME: your-email@gmail.com
+      MAIL_PASSWORD: your-app-specific-password
+      MAIL_FROM_ADDRESS: noreply@your-server.com
+      MAIL_FROM_NAME: EAFIT Registro Sistema
+
+      # Emails separados por coma
+      REPORT_RECIPIENTS: admin@your-company.com,estadisticas@your-company.com
+
+    ports:
+      - "5000:5000"
+    volumes:
+      # Logs compartidos
+      - ./logs:/app/logs
+      # Desarrollo (comentar en producción)
+      # - ./web-app:/app
+    networks:
+      - eafit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    labels:
+      - "com.example.description=EAFIT Web App (Spanish)"
+
+  # ==========================================
+  # APLICACIÓN FLASK - WEB SERVER (Inglés)
+  # ==========================================
+  web-app-en:
+    build:
+      context: ./web-app
+      dockerfile: ./Dockerfile
+    container_name: eafit-web-en
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: proyecto_final
+      DB_USER: admin
+      DB_PASSWORD: admin123
+      LANGUAGE: en
+      FLASK_ENV: production
+      FLASK_APP: app.py
+      
+    ports:
+      - "5000:5000"  # Puerto diferente (5001)
+    volumes:
+      - ./logs:/app/logs
+
+    networks:
+      - eafit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    labels:
+      - "com.example.description=EAFIT Web App (English)"
+volumes:
+  postgres_data:
+    driver: local
+
+# ==========================================
+# REDES
+# ==========================================
+networks:
+  eafit-network:
+    driver: bridge

@@ -1,519 +1,119 @@
-# 📋 EAFIT - Sistema de Registro de Estudiantes
+# telematicaFinal
 
-**Proyecto Final - Curso Internet, Protocolos y Arquitectura**  
-**Universidad EAFIT - 2026**
+## initial setup
 
-> Sistema integral de registro bilingüe (español/inglés) para potenciales estudiantes con interfaz moderna, validación robusta, panel administrativo y sistema de reportes automáticos por correo.
+in order to set up this project it is needed to have at least 4 machines or instances on aws or any other servive available runing ubuntu server.
 
-**Estado:** ✅ **PROYECTO COMPLETO - LISTO PARA PRODUCCIÓN**
+upon cloning of the repository on a computer or AWS instance (or any provider for that matter), run ```dockerinstall.sh``` to install docker and be able to move further
 
----
+to do so:
+1. execute: ```chmod -x dockerinstall.sh```
+2. execute: ```sudo bash dockerinstall.sh```,This will install docker and test it using the hello world image. ensure you are able to see the image results on console
+3. move onto the project component's folder you want to run on the machine
 
-## ✨ Características Principales
+## folders
 
-### 🎯 Formulario de Registro
-- ✅ Interfaz moderna con Bootstrap 5.3.0
-- ✅ Validación robusta en JavaScript (client-side)
-- ✅ Soporte bilingüe (Español/Inglés)
-- ✅ Diseño responsivo (mobile-first)
-- ✅ Almacenamiento seguro en PostgreSQL
-- ✅ Confirmación visual de registro exitoso
+the project has the following component's folders:
 
-### 📊 Panel Administrativo
-- ✅ Dashboard con estadísticas en tiempo real
-- ✅ API REST para obtener datos (/api/statistics)
-- ✅ Visualización de registros por comuna y carrera
-- ✅ Interfaz intuitiva y profesional
+* Database: contains all the database setup related files
+* nginx: contains all the nginx setup related files
+* web: contains all the webpage setup related files
 
-### 📧 Sistema de Reportes
-- ✅ Envío automático de reportes por correo
-- ✅ Generación de reportes HTML formatados
-- ✅ Estadísticas por comuna y programa académico
-- ✅ Integración con Gmail/SMTP
+in order to move forward go to the dedicated section for each component.
 
-### 🐳 Infraestructura & Deployment
-- ✅ Dockerización completa
-- ✅ Docker Compose para orquestación
-- ✅ Scripts de automatización (setup, run, deploy)
-- ✅ Configuración de entorno flexible
-- ✅ Listo para deployment en producción
+> [!NOTE]
+> is suggested to go over the deployment of each component as follows: Database => Web(1) => Web(2) => Nginx ; the order will not affect the deployment process, however it will ensure everything is properly set up, it will be the step by step processfollowed
 
----
+> [!WARNING]
+> At the start of each section you will find a port list, ensure the machines running the component have these ports open to ensure the correct working, otherwhise, if it is not posible to do so, ensure to change the port wich each component is listening to on the docker compose section
+--- 
+## Database
+The DB is currently running using postgres, the database uses the init.sql file to set up and run the database on the computer, allowing the machine to receive any database releated requests over the port 5432
+### Ports
+* 5432
 
-## 🚀 Inicio Rápido
+### Deployment
+in order to deploy the database you will follow these steps:
+1. open the Database folder
+2. run the command ```docker compose up```
+3. confirm the image is running by using ```docker ps```, this will list all the currently running images, in this scenario, the image we are looking for is "postgres:16-alpine"
 
-### Requisitos Previos
-- Python 3.11+
-- PostgreSQL 12+ (o Docker)
-- Git
-- pip (gestor de paquetes)
 
-### Instalación Automática (3 comandos)
+if you want to perform further checks to ensure the database was correctly set up with it's fields, follow these steps:
+1. use  ```docker ps ``` and get the name of the image 
+2. use ```docker exec -it <image name> psql -U admin -d proyecto_final```
+3. on the postgres CLI use ```\d``` to list all the current tables, you should be able to see the "registros" table described on the init.sql file inside the folder 
 
-```bash
-# 1. Clonar repositorio
-git clone https://github.com/Keniatv24/proyecto-final-internet.git
-cd proyecto-final-internet
-
-# 2. Setup automático (crea venv, instala dependencias, configura BD)
-chmod +x setup.sh
-./setup.sh
-
-# 3. Ejecutar
-./run.sh dev
-```
-
-**Acceder:** http://localhost:5000/
-
-> 💡 **Más opciones:** Ver [Docs_guia/SCRIPTS.md](Docs_guia/SCRIPTS.md) para todos los comandos disponibles
+>[!IMPORTANT]
+>in case that you get an error while using a docker command similar to:```permission denied while trying to connect to the docker API at unix:///var/run/docker.sock``` you might not be added to the user group who is authorized to do so, in that case use ```sudo``` to move forward
 
 ---
+## web (1) [ESP]
+this is the user interface that was be created in order to access the data and allow users to submit data and view/request an email with a statistic breakdown of the collected data, it's the english version of the site
+### Ports
+* 5000
 
-## 🔧 Configuración
+### Deployment
+in order to enable the mail sending feature through google, follow the following steps: 
+1. open the docker-compose file
+2. locate the variables ```MAIL_USERNAME``` and ```MAIL_PASSWORD```
+3. use the email address (ej:email@gmail.com) as the user, and the mail password is the mail password provided by google(not your user password)
 
-### 1. Variables de Entorno
+>[!NOTE]
+>is not required to have the mail feature enabled to get the page running 
 
-Crear archivo `.env` en la carpeta `web-app/`:
+in order to deploy the web page, you need to follow these steps:
+1. go to the web folder
+2. open the docker-compose file  and change the ```DB_HOST``` to your database internal IP under the ```web-app-es``` service 
+3. use  docker ```compose up web-app-es``` to deploy the ESP version of the web page
 
-```bash
-# Base de Datos
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=proyecto_final
-DB_USER=admin
-DB_PASSWORD=admin123
 
-# Idioma (es/en)
-LANGUAGE=es
-
-# Flask
-FLASK_ENV=development
-FLASK_DEBUG=1
-SECRET_KEY=tu-clave-secreta-aqui
-
-# Email (SMTP para envío de reportes)
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USE_TLS=1
-MAIL_USERNAME=tu-email@gmail.com
-MAIL_PASSWORD=tu-contraseña-app
-MAIL_DEFAULT_SENDER=noreply@eafit.edu.co
-```
-
-### 2. Base de Datos PostgreSQL
-
-**Opción A: PostgreSQL Local**
-
-```bash
-# Iniciar PostgreSQL (según SO)
-sudo systemctl start postgresql  # Linux
-brew services start postgresql   # macOS
-
-# Conectar y crear
-psql -U postgres
-
-# Comandos SQL:
-CREATE USER admin WITH PASSWORD 'admin123';
-CREATE DATABASE proyecto_final OWNER admin;
-\c proyecto_final
-
-CREATE TABLE registros (
-    id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    comuna INT NOT NULL CHECK (comuna >= 1 AND comuna <= 10),
-    carrera VARCHAR(100) NOT NULL,
-    idioma VARCHAR(2) DEFAULT 'es',
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_carrera ON registros(carrera);
-CREATE INDEX idx_comuna ON registros(comuna);
-```
-
-**Opción B: PostgreSQL con Docker**
-
-```bash
-docker run -d \
-  --name postgres-eafit \
-  -e POSTGRES_USER=admin \
-  -e POSTGRES_PASSWORD=admin123 \
-  -e POSTGRES_DB=proyecto_final \
-  -p 5432:5432 \
-  postgres:15
-```
-
-### 3. Configuración Flask
-
-Las variables se cargan automáticamente en `app.py`. Basta con tener `.env` configurado.
 
 ---
+## web (2) [ENG]
+this is the user interface that was be created in order to access the data and allow users to submit data and view/request an email with a statistic breakdown of the collected data, it's the english version of the site
 
-## ⚙️ Ejecución
+### Ports
+* 5000
 
-### 📌 Modo 1: Quick Setup (Recomendado para primeros pasos)
-
-```bash
-chmod +x setup.sh
-./setup.sh
-./run.sh dev
-```
-
-Acceder: http://localhost:5000/
-
-### 📌 Modo 2: Ejecución Manual
-
-```bash
-cd web-app
-python3 -m venv venv
-source venv/bin/activate  # En Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-# Configurar .env
-export LANGUAGE=es
-python app.py
-```
-
-### 📌 Modo 3: Docker
-
-```bash
-docker-compose up -d
-```
-
-Acceder: http://localhost:5000/
-
-### 📌 Modo 4: Producción con Gunicorn
-
-```bash
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
-```
-
+### Deployment
+in order to deploy the web page, you need to follow these steps:
+in order to deploy the web page, you need to follow these steps:
+1. go to the web folder
+2. open the docker-compose file  and change the ```DB_HOST``` to your database internal IP under the web-app-en service 
+3. use  docker ```compose up web-app-en``` to deploy the ESP version of the web page
 ---
+>[!NOTE]
+>web (2) [ENG] and web (1) [ESP] are exchangable, ensure the proper service is being edited on the docker-compose file uppon deployment 
+## nginx
+
+this component acts as the load balancer of the project and ensures the users are distributed across machines evenly, it also provides a SSL certificate from certbot,since certbot needs to have a machine running to be able to provide the appropiate certificates
+
+### Ports
+* 443
+* 80
+
+### Deployment
+
+in order to deploy nginx you need to follow these steps:
+
+1. go to the nginx folder
+2. open the nginx folder inside of it so you can edit the config files
+3. on the file ```confdummie.d``` you will find the ```server_name``` attribute under the server section, change it to the domain you have and want to set up for the project; this will allow you to obtain the certificates needed.
+4. change the ```server``` attributes under ```upstream backend_servers``` to the private IP of each machine hosting the webs, the order does not matter
+5. go out of the nginx folder, ensure that you are on the right folder by using ```ls``` and confirm you see the nginx folder and the ```docker-compose``` file
+6. run the command ```docker compose up nginx```
+7. manually execute: 
+```sudo docker compose run --rm --entrypoint "certbot" certbot certonly --webroot --webroot-path=/var/www/certbot --email <mail> --agree-tos --no-eff-email -d <domain>```
+8. even though certbot can take a few seconds to create the certificates needed to execute the project, it is recommended to wait at least 1 minute in order to use the command ```docker compose down``` to shut down the container and keep the generated certificates
+9. open the ```docker-compose``` file, and go to the ```volumes``` section
+10. on the line ```- ./nginx/confdummie.d:/etc/nginx/conf.d:ro``` change the "confdummie.d" segment to "conf.d"; the line should look like ```- ./nginx/conf.d:/etc/nginx/conf.d:ro``` and save the changes
+11. open the nginx folder 
+12. open the ```conf.d```
+13. apply the same changes on step 4 
+14. on both server sections, change the ```server_name``` to the domain you want to use
+15. on the last server section, you will find the attributes ```ssl_certificate``` and ```ssl_certificate_key``` change it's values so it points to a folder with your domain name it should look like this:
+    * ```ssl_certificate /etc/letsencrypt/live/<your domain>/fullchain.pem;```
+    * ```ssl_certificate_key /etc/letsencrypt/live/<your domain>/privkey.pem;```
+16. use ```docker compose up``` 
 
-## 📂 Estructura del Proyecto
-
-```
-proyecto-final-internet/
-│
-├── README.md                    # Este archivo
-├── .env.example                 # Template de variables (copiar a .env)
-├── .env.production.example      # Variables para producción
-├── .gitignore                   # Archivos a ignorar en Git
-│
-├── setup.sh                     # Script de instalación inicial
-├── run.sh                       # Script para ejecutar (dev/prod)
-├── deploy.sh                    # Script de deployment a servidor
-├── update.sh                    # Script de actualización rápida
-├── troubleshoot.sh              # Script de diagnóstico
-├── quick-deploy.sh              # Deployment rápido
-│
-├── docker-compose.yml           # Orquestación Docker
-├── gunicorn_config.py           # Configuración Gunicorn
-│
-├── docs/
-│   ├── PROGRESO.md              # Roadmap de fases
-│   ├── IMPLEMENTACION.md        # Detalles técnicos
-│   ├── TESTING.md               # Guía de testing
-│   ├── Plan.md                  # Requisitos iniciales
-│   └── POSTGRESQL_ERROR.md      # Troubleshooting BD
-│
-├── Docs_guia/
-│   ├── QUICK_START.md           # Inicio rápido
-│   ├── SCRIPTS.md               # Referencia de scripts
-│   ├── DEPLOYMENT.md            # Deployment a producción
-│   ├── SETUP_QUICK.md           # Setup simplificado
-│   ├── SETUP_GITHUB_ACTIONS.md  # CI/CD con GitHub
-│   ├── SYNC_OPTIONS.md          # Opciones de sincronización
-│   ├── AFTER_FIRST_REGISTER.md  # Pasos post-registro
-│   └── ANALISIS_VS_REQUISITOS.md # Análisis de requisitos
-│
-├── web-app/
-│   ├── app.py                   # Aplicación Flask principal
-│   ├── requirements.txt         # Dependencias Python
-│   ├── Dockerfile               # Configuración Docker
-│   ├── .env                     # Variables de entorno (LOCAL - NO SUBIR)
-│   │
-│   ├── templates/
-│   │   ├── index_es.html        # Formulario en español
-│   │   ├── index_en.html        # Formulario en inglés
-│   │   ├── admin_panel.html     # Dashboard de administrador
-│   │   └── email_reporte.html   # Template de email
-│   │
-│   ├── static/
-│   │   ├── css/
-│   │   │   └── style.css        # Estilos CSS
-│   │   └── js/
-│   │       ├── validacion.js    # Validación client-side
-│   │       └── charts.js        # Gráficas interactivas
-│   │
-│   └── utils/
-│       └── reportes.py          # Utilidades de reportes
-│
-└── logs/                        # Archivos de log
-```
-
----
-
-## 📚 Endpoints API Disponibles
-
-### 1. **Formulario de Registro**
-
-```
-POST /
-Parámetros:
-  - nombre (string, requerido)
-  - comuna (int 1-10, requerido)
-  - carrera (string, requerido)
-
-Respuesta:
-  - 200: Registro exitoso + mensaje confirmación
-  - 400: Error en validación + mensaje error
-```
-
-### 2. **Health Check**
-
-```
-GET /health
-Respuesta: 200 OK
-```
-
-### 3. **Estadísticas**
-
-```
-GET /api/statistics
-Respuesta JSON:
-{
-  "communes": {
-    "1": 5,
-    "2": 3,
-    ...
-  },
-  "careers": {
-    "Medicina": 8,
-    "Ingeniería": 5,
-    ...
-  },
-  "total": 13
-}
-```
-
-### 4. **Panel Administrativo**
-
-```
-GET /admin/panel
-Retorna: Dashboard con gráficas e interfaz de administración
-```
-
-### 5. **Envío de Reportes**
-
-```
-POST /admin/send-report
-Body JSON:
-{
-  "email": "destinatario@example.com"
-}
-
-Respuesta:
-{
-  "success": true,
-  "message": "Reporte enviado correctamente a destinatario@example.com"
-}
-```
-
----
-
-## 📦 Stack Tecnológico
-
-### Backend
-- **Python 3.11+** - Lenguaje de programación
-- **Flask 2.3+** - Framework web ligero
-- **PostgreSQL 12+** - Base de datos relacional
-- **psycopg2** - Adaptador PostgreSQL
-- **Flask-Mail** - Sistema de correos SMTP
-- **Gunicorn** - WSGI server producción
-
-### Frontend
-- **HTML5** - Markup semántico
-- **CSS3 Bootstrap 5.3** - Framework CSS responsivo
-- **JavaScript** - Validación client-side
-- **Font Awesome 6.4** - Iconografía
-
-### DevOps & Infraestructura
-- **Docker** - Containerización
-- **Docker Compose** - Orquestación
-- **Git/GitHub** - Control de versiones
-
----
-
-## 🔐 Seguridad Implementada
-
-### Medidas de Protección
-- ✅ **Validación client-side** - JavaScript
-- ✅ **Validación server-side** - Python/Flask
-- ✅ **Escape de HTML** - Jinja2 templates
-- ✅ **Protección XSS** - Plantillas seguras
-- ✅ **Variables de entorno** - Secretos fuera del código
-- ✅ **CORS y headers seguros**
-
-### Mejores Prácticas
-- Nunca guardar `.env` en repositorio
-- Usar `.env.example` como template
-- Contraseñas fuertes en producción
-- HTTPS en deployments (recomendado)
-
----
-
-## 🛠️ Troubleshooting
-
-### Error: "password authentication failed for user 'admin'"
-
-```bash
-# Cambiar contraseña PostgreSQL
-sudo -u postgres psql -c "ALTER USER admin PASSWORD 'admin123';"
-
-# Reintentar
-./run.sh dev
-```
-
-### Script de Diagnóstico
-
-```bash
-chmod +x troubleshoot.sh
-./troubleshoot.sh
-```
-
-Verifica automáticamente Python, PostgreSQL, Docker y variables de entorno.
-
----
-
-## 📖 Documentación Completa
-
-| Documento | Descripción |
-|-----------|-------------|
-| [Docs_guia/QUICK_START.md](Docs_guia/QUICK_START.md) | Guía rápida de inicio |
-| [Docs_guia/SCRIPTS.md](Docs_guia/SCRIPTS.md) | Referencia de scripts disponibles |
-| [Docs_guia/DEPLOYMENT.md](Docs_guia/DEPLOYMENT.md) | Deployment a servidor remoto |
-| [docs/IMPLEMENTACION.md](docs/IMPLEMENTACION.md) | Detalles técnicos de implementación |
-| [docs/TESTING.md](docs/TESTING.md) | Guía de testing |
-| [docs/POSTGRESQL_ERROR.md](docs/POSTGRESQL_ERROR.md) | Soluciones PostgreSQL |
-
----
-
-## 📊 Resumen de Features Implementadas
-
-| Feature | Estado | Descripción |
-|---------|--------|-------------|
-| Formulario Registro | ✅ Completo | Bilingüe, validado, responsivo |
-| Almacenamiento BD | ✅ Completo | PostgreSQL con estructura completa |
-| Panel Admin | ✅ Completo | Dashboard con estadísticas en tiempo real |
-| API Estadísticas | ✅ Completo | Datos por comuna y carrera |
-| Sistema Email | ✅ Completo | Envío de reportes HTML formateados |
-| Docker | ✅ Completo | Containerizado y listo para producción |
-| Validación | ✅ Completo | Client-side y server-side |
-| Internacionalización | ✅ Completo | Soporte español/inglés |
-| Scripts Automáticos | ✅ Completo | Setup, run, deploy, update |
-
----
-
-## 👥 Autor
-
-**Universidad EAFIT - Proyecto Final**  
-Curso: Internet, Protocolos y Arquitectura  
-Año: 2026
-
----
-
-## 📄 Licencia
-
-MIT License - Ver [LICENSE](LICENSE) para más detalles
-
----
-
-## 🚀 Próximos Pasos
-
-El proyecto está completamente funcional. Para llevar a producción:
-
-1. **Configurar dominio** - Registrar dominio (Godaddy, Namecheap, etc.)
-2. **Certificado SSL** - Let's Encrypt (gratis) o certificado comercial
-3. **Hosting** - Desplegar en servidor remoto o cloud (AWS, Azure, DigitalOcean)
-4. **Monitoreo** - Configurar logs y alertas
-5. **Backups** - Establecer política de backups automáticos de BD
-
-Ver plan completo: `/docs/PROGRESO.md`
-
----
-
-## 🤝 Contribuir
-
-### Para agregar cambios:
-
-```bash
-# 1. Crear rama
-git checkout -b feature/mi-caracteristica
-
-# 2. Hacer cambios
-# ... editar archivos ...
-
-# 3. Commit
-git add .
-git commit -m "Descripción clara del cambio"
-
-# 4. Push
-git push origin feature/mi-caracteristica
-
-# 5. Pull Request
-# Crear PR en GitHub
-```
-
-### Estándares de Código
-- PEP 8 para Python
-- ESLint para JavaScript
-- HTML5 semántico
-
----
-
-## 📞 Soporte y Contacto
-
-**Institución:** Universidad EAFIT  
-**Curso:** Internet, Protocolos y Arquitectura  
-**Profesor:** [Nombre]  
-**Equipo:** [Integrantes]
-
----
-
-## 📄 Licencia
-
-Proyecto educativo - Universidad EAFIT 2026
-
----
-
-## 📋 Checklist de Arranque
-
-Antes de comenzar a trabajar:
-
-- [ ] Clonar repositorio
-- [ ] Crear entorno virtual (`python3 -m venv venv`)
-- [ ] Activar entorno (`source venv/bin/activate`)
-- [ ] Instalar dependencias (`pip install -r requirements.txt`)
-- [ ] Crear base de datos PostgreSQL
-- [ ] Crear archivo `.env` con variables
-- [ ] Ejecutar `python app.py`
-- [ ] Acceder a http://localhost:5000/
-- [ ] Verificar registro funciona
-- [ ] Consultar datos en BD
-
----
-
-## 🚀 Próximos Pasos
-
-1. **Completar FASE 1:** Testing en navegadores
-2. **FASE 2:** Implementar panel administrativo
-3. **FASE 3:** Sistema de email y reportes
-4. **FASE 4:** Segundo servidor web
-5. **FASE 5:** NGINX load balancer
-6. **FASE 6:** SSL/certificado y deploy
-
----
-
-**Última actualización:** 21 de mayo de 2026  
-**Versión:** 1.0.0-FASE1  
-**Estado:** 🟡 En Desarrollo - 17% Completado
